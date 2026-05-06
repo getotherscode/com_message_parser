@@ -5,20 +5,29 @@ import serial.tools.list_ports
 # f is content in {} will be format string
 
 def load_the_com(com_desc:str, baudrate:int):
-    ports = serial.tools.list_ports.comports()
+    print(f"target is % {com_desc} %")
 
+    # find the target com in avalible ports list
+    ports = serial.tools.list_ports.comports()
+    targetport = None
     if not ports:
         print("no ports can be found")
     else:
         print("ports list :")
         for port in ports:
             print(f"com: {port.device} - description: {port.description} ") 
-            if(port.description.find(com_desc)):
+            if com_desc in port.description:
                 targetport = port
-        if(targetport.device == ""):
-            print("not find the target")
-        else:
-            print(f"target is - {targetport.device}")
+                break
+            else:
+                continue
+
+    if targetport is not None:
+        print(f"find the target port :{targetport.device}, description:{targetport.description}")
+    else:
+        print("not find the target")
+        exit()
+
         
 
     # config the port and check if it can be used

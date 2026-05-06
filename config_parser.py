@@ -6,7 +6,7 @@ from rich.console import Console
 SENSOR_FAULT = 0x7FFF
 
 #display in console
-def init_display_format():
+def init_run_time_data_format():
 
     table = Table(title="Run-Time Data")
     table.add_column("Field", style="cyan", width=30)
@@ -45,10 +45,11 @@ def parse_run_time(recv_dict: dict, msg:bytes, format: Table):
         data = 0
         scale: float = st.get('scale', 1.0)
         byte_seq: str = st.get('byte_seq')
+        bit_array = st.get('bits')
+
         match data_type:
             case "u8":        
                 data = msg[offset]
-                #format.add_row(f"{st.get('description',str)} : {data}")
 
             case "u16":
                 if byte_seq != "big":
@@ -58,13 +59,18 @@ def parse_run_time(recv_dict: dict, msg:bytes, format: Table):
                 # handle sensor fault
                 if data == SENSOR_FAULT:
                     data = 0
-                    #format.add_row(f"{st.get('description',str)} : SENSOR FAULT")
-                    #continue
                 else:    
                     # scale
                     if scale != None:
                         data = data * scale
-                        #format.add_row(f"{st.get('description',str)} : {data}, high:{msg[offset]:#x}, low:{msg[offset + 1]:#x}")
+
+                if bit_array:
+                    for bit in bit_array:
+                        bit_offset = bit.get('bit_offset')
+                        bit_desc = bit.get('description')
+                        bit_value = ((1 << bit_offset) & data) >> bit_offset
+                        print(f"{bit_desc} : {bit_value}")
+
             case "u32":
                 if byte_seq != "big":
                     data = (msg[offset + 3] << 24) + (msg[offset + 2] << 16) + (msg[offset + 1] << 8) + msg[offset]            
@@ -96,12 +102,12 @@ def parse_and_show_msg(reply:bytes, msg_dict: dict):
                 print(f"matched message type : {msg_type_desc}")
             break
     # get format table
-    format = init_display_format()
+    format = init_run_time_data_format()
     console = Console()
 
     match value:
         case 0x70:
-            parse_run_time(match_msg, reply,format)
+            parse_run_time(match_msg, reply, format)
 
     console.print(format)
 

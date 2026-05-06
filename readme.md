@@ -5,6 +5,6 @@ Windows
 ## language
 python
 ## library
-pip, pyserial, table, rich, tomlib
+pip, pyserial, table, rich, tomlib，crcmod
 ## notice
 this project is very simple and imperfect, i will try my best to modify 
