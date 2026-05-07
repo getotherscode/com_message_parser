@@ -23,13 +23,13 @@ byte_offset = 1
 value = 0x70
 
 [[message.recv.msg_struct]]
-description = "address"
+description = "地址"
 byte_offset = 0
 data_type = "u8"
 scale = 1
 
 [[message.recv.msg_struct]]
-description = "light"
+description = "指示灯-N"
 byte_offset = 4
 data_type = "u16"
 byte_seq = "big"
@@ -100,7 +100,7 @@ scale = 1
     #bit_offset = 15
 
 [[message.recv.msg_struct]]
-description = "alarm1"
+description = "告警-1-N"
 byte_offset = 6
 data_type = "u16"
 byte_seq = "big"
@@ -171,110 +171,110 @@ scale = 1
     bit_offset = 15
 
 [[message.recv.msg_struct]]
-description = "room_temp"
+description = "库温"
 byte_offset = 8
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "defrost_temp"
+description = "化霜温度"
 byte_offset = 10
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "discharge_temp"
+description = "排气温度"
 byte_offset = 12
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "suction_temp"
+description = "吸气温度"
 byte_offset = 14
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "condenser_temp"
+description = "冷凝温度"
 byte_offset = 16
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "liquid_injection_temp"
+description = "喷液温度"
 byte_offset = 18
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "ambient_temp"
+description = "环境温"
 byte_offset = 20
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "suction_pressure"
+description = "吸气压力"
 byte_offset = 22
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "discharge_pressure"
+description = "排气压力"
 byte_offset = 24
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "relay_status"
+description = "继电器-N"
 byte_offset = 26
 data_type = "u16"
 byte_seq = "big"
 scale = 1
 
     [[message.recv.msg_struct.bits]]
-    description = "compress_relay"
+    description = "压缩机"
     bit_offset = 0
 
     [[message.recv.msg_struct.bits]]
-    description = "defrost_relay"
+    description = "化霜"
     bit_offset = 1
 
     [[message.recv.msg_struct.bits]]
-    description = "fan_relay"
+    description = "内风机"
     bit_offset = 2
 
     [[message.recv.msg_struct.bits]]
-    description = "supply_relay"
+    description = "电磁阀"
     bit_offset = 3
 
     [[message.recv.msg_struct.bits]]
-    description = "condenser_fan_relay"
+    description = "冷凝风扇"
     bit_offset = 4
 
     [[message.recv.msg_struct.bits]]
-    description = "alarm_relay"
+    description = "告警继电器"
     bit_offset = 5
 
     [[message.recv.msg_struct.bits]]
-    description = "liquid_relay"
+    description = "喷液"
     bit_offset = 6
 
 [[message.recv.msg_struct]]
-description = "param_change_flag"
+description = "参数变化标志"
 byte_offset = 28
 data_type = "u8"
 
 [[message.recv.msg_struct]]
-description = "alarm2"
+description = "告警-2-N"
 byte_offset = 29
 data_type = "u16"
 byte_seq = "big"
@@ -289,59 +289,59 @@ scale = 1
     bit_offset = 1
 
     [[message.recv.msg_struct.bits]]
-    description = "high_press_sensor_fault"
+    description = "高压传感器故障"
     bit_offset = 2
 
     [[message.recv.msg_struct.bits]]
-    description = "low_press_sensor_fault"
+    description = "低压传感器故障"
     bit_offset = 3
 
     [[message.recv.msg_struct.bits]]
-    description = "voltage_abnormal_alarm"
+    description = "电压异常"
     bit_offset = 4
 
     [[message.recv.msg_struct.bits]]
-    description = "compressor_overheat_alarm"
+    description = "压缩机过热"
     bit_offset = 5
 
     [[message.recv.msg_struct.bits]]
-    description = "superheat_low_alarm"
+    description = "过热度过低"
     bit_offset = 6
 
     [[message.recv.msg_struct.bits]]
-    description = "high_press_data_alarm"
+    description = "高压"
     bit_offset = 7
 
     [[message.recv.msg_struct.bits]]
-    description = "low_press_data_alarm"
+    description = "低压"
     bit_offset = 8
 
     [[message.recv.msg_struct.bits]]
-    description = "comm_fault"
+    description = "通讯故障"
     bit_offset = 9
 
     [[message.recv.msg_struct.bits]]
-    description = "eeprom_fault"
+    description = "EEP故障"
     bit_offset = 10
 
     [[message.recv.msg_struct.bits]]
-    description = "discharge_temp_high_alarm"
+    description = "排气温度过高"
     bit_offset = 11
 
     [[message.recv.msg_struct.bits]]
-    description = "compressor_protect"
+    description = "压缩机保护"
     bit_offset = 12
 
     [[message.recv.msg_struct.bits]]
-    description = "voltage_protect"
+    description = "电压保护"
     bit_offset = 13
 
     [[message.recv.msg_struct.bits]]
-    description = "door_open_alarm"
+    description = "开门时间过长"
     bit_offset = 14
 
     [[message.recv.msg_struct.bits]]
-    description = "humidity_sensor_fault"
+    description = "湿度传感器故障"
     bit_offset = 15
 
 [[message.recv.msg_struct]]
@@ -362,28 +362,28 @@ byte_offset = 35
 data_type = "u8"
 
 [[message.recv.msg_struct]]
-description = "current_phase_a"
+description = "A相电流"
 byte_offset = 36
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "current_phase_b"
+description = "B相电流"
 byte_offset = 38
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "current_phase_c"
+description = "C相电流"
 byte_offset = 40
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "current_avg"
+description = "平均电流"
 byte_offset = 42
 data_type = "u16"
 byte_seq = "big"
@@ -395,90 +395,90 @@ byte_offset = 44
 data_type = "u8"
 
 [[message.recv.msg_struct]]
-description = "firmware_version"
+description = "主板版本号"
 byte_offset = 45
 data_type = "u8"
 
 [[message.recv.msg_struct]]
-description = "eev1_steps"
+description = "膨胀阀1步数"
 byte_offset = 46
 data_type = "u16"
 byte_seq = "big"
 
 [[message.recv.msg_struct]]
-description = "eev2_steps"
+description = "膨胀阀2步数"
 byte_offset = 48
 data_type = "u16"
 byte_seq = "big"
 
 [[message.recv.msg_struct]]
-description = "fan_speed"
+description = "风扇转速"
 byte_offset = 50
 data_type = "u16"
 byte_seq = "big"
 
 [[message.recv.msg_struct]]
-description = "supply_voltage"
+description = "电压"
 byte_offset = 52
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "evap_temp"
+description = "蒸发温度"
 byte_offset = 54
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "superheat"
+description = "过热度"
 byte_offset = 56
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "temp_diff"
+description = "换热温差"
 byte_offset = 58
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "energy_meter"
+description = "电量"
 byte_offset = 60
 data_type = "u32"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "humidity"
+description = "湿度"
 byte_offset = 64
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "total_current"
+description = "总电流"
 byte_offset = 66
 data_type = "u16"
 byte_seq = "big"
 scale = 0.1
 
 [[message.recv.msg_struct]]
-description = "io_signal"
+description = "IO信号"
 byte_offset = 68
 data_type = "u16"
 byte_seq = "big"
 scale = 1
 
     [[message.recv.msg_struct.bits]]
-    description = "reserved"
+    description = "保留"
     bit_offset = 0
 
     [[message.recv.msg_struct.bits]]
-    description = "door_signal"
+    description = "门信号"
     bit_offset = 1
 
 #user set parameter

@@ -5,15 +5,6 @@ from rich.console import Console
 
 SENSOR_FAULT = 0x7FFF
 
-#display in console
-def init_run_time_data_format():
-
-    table = Table(title="Run-Time Data")
-    table.add_column("Field", style="cyan", width=30)
-    table.add_column("Value", style="green", width=15)
-    table.add_column("Raw", style="dim", width=15)
-    return table
-
 # load the config file
 def load_toml_file(config_file_path = "./config.toml"):
     config_file = Path(config_file_path)
@@ -33,11 +24,21 @@ def load_toml_file(config_file_path = "./config.toml"):
         return config
 
 #parse message: run time
-def parse_run_time(recv_dict: dict, msg:bytes, format: Table):
+def parse_run_time(recv_dict: dict, msg:bytes):
     # msg level : struct
     msg_st = recv_dict.get("msg_struct",[])
     print(f"msg_struct count: {len(msg_st)}")
+
+    # create the table to format showed data in terminal
+    bytes_t = Table(title="Run-Time Data")
+
+    bytes_t.add_column("Type", style="dim", width=8)
+    bytes_t.add_column("Desc", style="cyan", width=25)
+    bytes_t.add_column("Value", style="green", width=15,)
+    bytes_t.add_column("Raw Data (Hex)", style="yellow", width=20)
+
     for st in msg_st: 
+        byte_desc = st.get('description',str)
         offset: int = st.get('byte_offset')
         data_type:str = st.get('data_type')
 
@@ -50,6 +51,8 @@ def parse_run_time(recv_dict: dict, msg:bytes, format: Table):
         match data_type:
             case "u8":        
                 data = msg[offset]
+                bytes_t.add_row("[bold blue]u8[/bold blue]",f"{byte_desc}", f"{data}", f"{msg[offset]:02x}")
+                bytes_t.add_section()
 
             case "u16":
                 if byte_seq != "big":
@@ -61,24 +64,40 @@ def parse_run_time(recv_dict: dict, msg:bytes, format: Table):
                     data = 0
                 else:    
                     # scale
-                    if scale != None:
+                    if scale != None and data != 0:
                         data = data * scale
 
                 if bit_array:
+                    # main data Bytes
+                    bytes_t.add_row("[bold blue]u16[/bold blue]",f"{byte_desc}", "",f"h:{msg[offset]:02x}, l:{msg[offset + 1]:02x}")
+                    # Delimiter
+                    bytes_t.add_section()
+                    # child data bits
                     for bit in bit_array:
                         bit_offset = bit.get('bit_offset')
                         bit_desc = bit.get('description')
                         bit_value = ((1 << bit_offset) & data) >> bit_offset
-                        print(f"{bit_desc} : {bit_value}")
-
+                        bytes_t.add_row("[bold blue]bit[/bold blue]",f"{bit_desc}", f"{bit_value}")
+                    bytes_t.add_section()
+                else:
+                    bytes_t.add_row("[bold blue]u16[/bold blue]",f"{byte_desc}", f"{data}",f"h:{msg[offset]:02x}, l:{msg[offset + 1]:02x}")
+                    bytes_t.add_section()
+                    
             case "u32":
                 if byte_seq != "big":
                     data = (msg[offset + 3] << 24) + (msg[offset + 2] << 16) + (msg[offset + 1] << 8) + msg[offset]            
                 else:
                     data = (msg[offset] << 24) + (msg[offset + 1] << 16) + (msg[offset + 2] << 8) + msg[offset + 3]
 
-        # show the data
-        format.add_row(f"{st.get('description',str)}", f"{data}", f"high:{msg[offset]:#x}, low:{msg[offset + 1]:#x}")
+                bytes_t.add_row("[bold blue]u32[/bold blue]", f"{byte_desc}", f"{data}",f"h3:{msg[offset]:02x}, h2:{msg[offset + 1]:02x}, \
+                                 h1:{msg[offset + 2]:02x}, h0:{msg[offset + 3]:02x}")
+                bytes_t.add_section()
+    
+    # show the data
+    console = Console()
+    console.print(bytes_t)
+            
+        
 
 
 # parse and show message in terminal interface
@@ -101,14 +120,10 @@ def parse_and_show_msg(reply:bytes, msg_dict: dict):
             else:
                 print(f"matched message type : {msg_type_desc}")
             break
-    # get format table
-    format = init_run_time_data_format()
-    console = Console()
 
     match value:
         case 0x70:
-            parse_run_time(match_msg, reply, format)
-
-    console.print(format)
+            parse_run_time(match_msg, reply)
+    
 
 

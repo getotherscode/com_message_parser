@@ -5,6 +5,10 @@ Windows
 ## language
 python
 ## library
-pip, pyserial, table, rich, tomlib，crcmod
+1. pip: python pack manage
+2. pyserial: get windows com obj
+3. rich: format data in terminal
+4. tomlib: parse TOML file
+5. crcmod: modbus crc calculation
 ## notice
 this project is very simple and imperfect, i will try my best to modify 
