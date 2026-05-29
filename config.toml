@@ -1,6 +1,6 @@
 # serial port
 [serial]
-description = "CH343"
+description = "UART"
 baudrate = 9600
 bytesize = 8
 parity = "N"
@@ -17,6 +17,7 @@ timeout = 1
 #run time data
 [[message.recv]]
 msg_type_desc = "run-time"
+msg_length = 72
 
 [message.recv.msg_type_code]
 byte_offset = 1

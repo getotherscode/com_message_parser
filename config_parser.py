@@ -1,4 +1,6 @@
 import tomllib
+import serial
+import time
 from pathlib import Path
 from rich.table import Table
 from rich.console import Console
@@ -22,9 +24,35 @@ def load_toml_file(config_file_path = "./config.toml"):
             print("load config toml file failed, Error Msg:{e}")
             exit()
         return config
+    
+def frame_spliter(com_obj: serial.Serial, frame_interval_require = 0.01):
+    buffer = b''
+    last_recv_time = 0.0
+
+    original_timeout = com_obj.timeout
+    com_obj.timeout = 0.001
+    try:
+        while True:
+            bytes_to_read = com_obj.in_waiting
+            if bytes_to_read > 0:
+                data = com_obj.read(bytes_to_read)
+                if data:
+                    buffer += data
+                    last_recv_time = time.time()
+            
+            current_time = time.time()
+            if len(buffer) > 0 and (current_time - last_recv_time) > frame_interval_require:
+                yield buffer
+                buffer = b''
+                last_recv_time = 0.0
+            time.sleep(0.001)
+    except GeneratorExit:
+        pass
+    finally:
+        com_obj.timeout = original_timeout        
 
 #parse message: run time
-def parse_run_time(recv_dict: dict, msg:bytes):
+def parse_run_time(recv_dict: dict, msg: bytes):
     # msg level : struct
     msg_st = recv_dict.get("msg_struct",[])
     print(f"msg_struct count: {len(msg_st)}")
@@ -101,7 +129,7 @@ def parse_run_time(recv_dict: dict, msg:bytes):
 
 
 # parse and show message in terminal interface
-def parse_and_show_msg(reply:bytes, msg_dict: dict):
+def parse_and_show_msg(reply:bytes, msg_dict: dict, expect_length: int):
     msg_list:list = msg_dict.get("recv",[])
 
     # match the message type
@@ -109,17 +137,19 @@ def parse_and_show_msg(reply:bytes, msg_dict: dict):
     # list level: recv
     for msg_recv in msg_list:
         msg_type_desc = msg_recv.get("msg_type_desc")
+        msg_len = msg_recv.get("msg_length")
         msg_type_code = msg_recv.get("msg_type_code",{})
         value = msg_type_code.get("value");   
         type_code_offset = msg_type_code.get("byte_offset")
         print(f"current message type code : {value:#x}")
         if type_code_offset is not None and reply[type_code_offset] == value:
             match_msg = msg_recv
-            if match_msg == None:
+            if match_msg == None or msg_len != expect_length:
                 print("no matched message")
+                continue
             else:
                 print(f"matched message type : {msg_type_desc}")
-            break
+                break
 
     match value:
         case 0x70:

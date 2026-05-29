@@ -1,9 +1,14 @@
-from config_parser import load_toml_file, parse_and_show_msg
+from config_parser import load_toml_file, parse_and_show_msg, frame_spliter
 from com_app import load_the_com
 import crcmod.predefined
 from typing import Callable
+import time
 
 if __name__ == "__main__":
+
+# mode
+    MODE = "listen"
+    FRAME_TIMEOUT = 0.015
 
 # load the configure file    
     config_obj = load_toml_file()
@@ -32,28 +37,37 @@ if __name__ == "__main__":
     ## f'{b:02x}': format b as lowercase hex, at least 2 digits (e.g. 1->'01', 255->'ff')
     print("send message : " + ' '.join(f'{b:02X}' for b in query_run_time_msg_with_crc))
 
-    # send query message
-    com_obj.write(query_run_time_msg_with_crc)
-
-    # receive reply
-    reply_msg:bytes = com_obj.readline()
-    if(len(reply_msg) == 0):
-        print("no reply")
-    else:
-        #check crc
-
-        print("reply message : " + ' '.join(f'{b:02x}' for b in reply_msg))
-
-    # parse the reply message and show in terminal
     # get directory
     msg_dict = config_obj.get("message")
 
-    parse_and_show_msg(reply_msg, msg_dict)
+    try:
+        framer = frame_spliter(com_obj, FRAME_TIMEOUT)
+        while True:
+            if MODE == "poll":
+                # send query message
+                com_obj.write(query_run_time_msg_with_crc)
+                time.sleep(0.05)
 
-    # show the reply message by char graphic
+            elif MODE == "listen":
+                pass
 
-    #close the com
-    com_obj.close()
+            # receive reply
+            reply_msg:bytes = next(framer)
+
+            if(len(reply_msg) == 0):
+                print("no reply")
+                continue
+
+            #check crc
+            print("reply message : " + ' '.join(f'{b:02x}' for b in reply_msg))
+
+            # parse the reply message and show in terminal
+            parse_and_show_msg(reply_msg, msg_dict, len(reply_msg))
+    except KeyboardInterrupt:
+            print("Ctrl + C to Exit !")
+    finally:
+            #close the com
+            com_obj.close()
 
 
 
