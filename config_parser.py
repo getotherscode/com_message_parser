@@ -31,6 +31,7 @@ def frame_spliter(com_obj: serial.Serial, frame_interval_require = 0.01):
 
     original_timeout = com_obj.timeout
     com_obj.timeout = 0.001
+    #try, except match, finally must be executed
     try:
         while True:
             bytes_to_read = com_obj.in_waiting
@@ -42,6 +43,7 @@ def frame_spliter(com_obj: serial.Serial, frame_interval_require = 0.01):
             
             current_time = time.time()
             if len(buffer) > 0 and (current_time - last_recv_time) > frame_interval_require:
+                #yield is a generator, remember the state and repeted returns 
                 yield buffer
                 buffer = b''
                 last_recv_time = 0.0

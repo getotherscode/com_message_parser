@@ -7,7 +7,7 @@ import time
 if __name__ == "__main__":
 
 # mode
-    MODE = "listen"
+    MODE = "poll"
     FRAME_TIMEOUT = 0.015
 
 # load the configure file    

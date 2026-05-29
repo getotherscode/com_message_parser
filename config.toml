@@ -1,6 +1,6 @@
 # serial port
 [serial]
-description = "UART"
+description = "CH343"
 baudrate = 9600
 bytesize = 8
 parity = "N"
