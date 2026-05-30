@@ -5,9 +5,9 @@ Windows
 ## language
 python
 ## library
-1. pip: python pack manage
+1. pip: python pack manager
 2. pyserial: get windows com obj
-3. rich: format data in terminal
+3. textual: format data in terminal
 4. tomlib: parse TOML file
 5. crcmod: modbus crc calculation
 ## notice

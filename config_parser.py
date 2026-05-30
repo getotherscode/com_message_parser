@@ -2,8 +2,6 @@ import tomllib
 import serial
 import time
 from pathlib import Path
-from rich.table import Table
-from rich.console import Console
 
 SENSOR_FAULT = 0x7FFF
 
@@ -24,7 +22,8 @@ def load_toml_file(config_file_path = "./config.toml"):
             print("load config toml file failed, Error Msg:{e}")
             exit()
         return config
-    
+
+# frame spliter    
 def frame_spliter(com_obj: serial.Serial, frame_interval_require = 0.01):
     buffer = b''
     last_recv_time = 0.0
@@ -40,8 +39,8 @@ def frame_spliter(com_obj: serial.Serial, frame_interval_require = 0.01):
                 if data:
                     buffer += data
                     last_recv_time = time.time()
-            
             current_time = time.time()
+
             if len(buffer) > 0 and (current_time - last_recv_time) > frame_interval_require:
                 #yield is a generator, remember the state and repeted returns 
                 yield buffer
@@ -55,21 +54,15 @@ def frame_spliter(com_obj: serial.Serial, frame_interval_require = 0.01):
 
 #parse message: run time
 def parse_run_time(recv_dict: dict, msg: bytes):
-    # msg level : struct
+    # msg level: struct
     msg_st = recv_dict.get("msg_struct",[])
-    print(f"msg_struct count: {len(msg_st)}")
 
     # create the table to format showed data in terminal
-    bytes_t = Table(title="Run-Time Data")
-
-    bytes_t.add_column("Type", style="dim", width=8)
-    bytes_t.add_column("Desc", style="cyan", width=25)
-    bytes_t.add_column("Value", style="green", width=15,)
-    bytes_t.add_column("Raw Data (Hex)", style="yellow", width=20)
+    data_obj = []
 
     for st in msg_st: 
-        byte_desc = st.get('description',str)
         offset: int = st.get('byte_offset')
+        byte_desc = st.get('description',f"Offset_{offset}")
         data_type:str = st.get('data_type')
 
         # u8 u16 u32 match
@@ -81,8 +74,16 @@ def parse_run_time(recv_dict: dict, msg: bytes):
         match data_type:
             case "u8":        
                 data = msg[offset]
-                bytes_t.add_row("[bold blue]u8[/bold blue]",f"{byte_desc}", f"{data}", f"{msg[offset]:02x}")
-                bytes_t.add_section()
+                data_obj.append(
+                    {
+                        "id":str(offset),
+                        "type":"[bold blue]u8[/bold blue]",
+                        "desc":f"{byte_desc}", 
+                        "value":f"{data}", 
+                        "raw":f"{msg[offset]:02x}",
+                        "is_section":True
+                    }
+                )
 
             case "u16":
                 if byte_seq != "big":
@@ -96,42 +97,71 @@ def parse_run_time(recv_dict: dict, msg: bytes):
                     # scale
                     if scale != None and data != 0:
                         data = data * scale
+                value_str = f"{data:.1f}" if float(scale) != 1.0 else f"{int(data)}"
 
                 if bit_array:
-                    # main data Bytes
-                    bytes_t.add_row("[bold blue]u16[/bold blue]",f"{byte_desc}", "",f"h:{msg[offset]:02x}, l:{msg[offset + 1]:02x}")
-                    # Delimiter
-                    bytes_t.add_section()
-                    # child data bits
+                    data_obj.append(
+                        {
+                            "id": str(offset),
+                            "type":"[bold blue]u16[/bold blue]",
+                            "desc":f"{byte_desc}", 
+                            "value":" ",
+                            "raw":f"h:{msg[offset]:02x}, l:{msg[offset + 1]:02x}",
+                            "is_section":True
+                        }
+                    )
+
                     for bit in bit_array:
                         bit_offset = bit.get('bit_offset')
                         bit_desc = bit.get('description')
                         bit_value = ((1 << bit_offset) & data) >> bit_offset
-                        bytes_t.add_row("[bold blue]bit[/bold blue]",f"{bit_desc}", f"{bit_value}")
-                    bytes_t.add_section()
+                        data_obj.append(
+                        {
+                            "id": f"{offset}_{bit_offset}",
+                            "type":"[bold blue]bit[/bold blue]",
+                            "desc":f"{bit_desc}", 
+                            "value":f"{bit_value}",
+                            "raw":" ",
+                            "is_section":False
+                        })
+                    data_obj[-1]["is_section"] = True
+
                 else:
-                    bytes_t.add_row("[bold blue]u16[/bold blue]",f"{byte_desc}", f"{data}",f"h:{msg[offset]:02x}, l:{msg[offset + 1]:02x}")
-                    bytes_t.add_section()
+                    data_obj.append(
+                        {
+                            "id": str(offset),
+                            "type":"[bold blue]u16[/bold blue]",
+                            "desc":f"{byte_desc}", 
+                            "value":value_str,
+                            "raw":f"h:{msg[offset]:02x}, l:{msg[offset + 1]:02x}",
+                            "is_section":True
+                        })
                     
             case "u32":
                 if byte_seq != "big":
                     data = (msg[offset + 3] << 24) + (msg[offset + 2] << 16) + (msg[offset + 1] << 8) + msg[offset]            
                 else:
                     data = (msg[offset] << 24) + (msg[offset + 1] << 16) + (msg[offset + 2] << 8) + msg[offset + 3]
+                
+                if scale != None and data != 0:
+                        data = data * scale
+                value_str = f"{data:.1f}" if float(scale) != 1.0 else f"{int(data)}"
+                
+                data_obj.append(
+                        {
+                            "id": str(offset),
+                            "type":"[bold blue]u32[/bold blue]",
+                            "desc":f"{byte_desc}", 
+                            "value":f"{data}",
+                            "raw":f"h:{msg[offset]:02x}, l:{msg[offset + 1]:02x}, h1:{msg[offset + 2]:02x}, h0:{msg[offset + 3]:02x}",
+                            "is_section":True
+                        })
 
-                bytes_t.add_row("[bold blue]u32[/bold blue]", f"{byte_desc}", f"{data}",f"h3:{msg[offset]:02x}, h2:{msg[offset + 1]:02x}, \
-                                 h1:{msg[offset + 2]:02x}, h0:{msg[offset + 3]:02x}")
-                bytes_t.add_section()
-    
+    return data_obj
     # show the data
-    console = Console()
-    console.print(bytes_t)
-            
-        
-
 
 # parse and show message in terminal interface
-def parse_and_show_msg(reply:bytes, msg_dict: dict, expect_length: int):
+def parse_msg(reply:bytes, msg_dict: dict, expect_length: int):
     msg_list:list = msg_dict.get("recv",[])
 
     # match the message type
@@ -143,19 +173,19 @@ def parse_and_show_msg(reply:bytes, msg_dict: dict, expect_length: int):
         msg_type_code = msg_recv.get("msg_type_code",{})
         value = msg_type_code.get("value");   
         type_code_offset = msg_type_code.get("byte_offset")
-        print(f"current message type code : {value:#x}")
+        #print(f"current message type code : {value:#x}")
         if type_code_offset is not None and reply[type_code_offset] == value:
             match_msg = msg_recv
             if match_msg == None or msg_len != expect_length:
-                print("no matched message")
+                #print("no matched message")
                 continue
             else:
-                print(f"matched message type : {msg_type_desc}")
+                #print(f"matched message type : {msg_type_desc}")
                 break
 
     match value:
         case 0x70:
-            parse_run_time(match_msg, reply)
+            return parse_run_time(match_msg, reply)
     
 
 
